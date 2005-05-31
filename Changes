@@ -1,5 +1,9 @@
 Revision history for Perl extension Tree::Parser.
 
+0.11 Tues May 31, 2005
+    - fixed RT Bug# 13041 thanks to Gerd for the 
+      solution
+
 0.10 Mon Apr 11, 2005
     - fixed RT Bug# 12244 thanks to Chad Ullman for
       both the code and test case

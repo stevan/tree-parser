@@ -4,7 +4,7 @@ package Tree::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Scalar::Util qw(blessed);
 
@@ -126,6 +126,7 @@ sub prepareInput {
         my ($self) = @_;
         $self->{parse_filter} = $TAB_INDENTED_PARSE;
         $self->{deparse_filter} = $TAB_INDENTED_DEPARSE;
+        $self->{deparse_filter_cleanup} = undef;
     }
 }
 
@@ -157,6 +158,7 @@ sub prepareInput {
         $num_spaces ||= 4;
         $self->{parse_filter} = $make_SPACE_INDENTED_PARSE->($num_spaces);
         $self->{deparse_filter} = $make_SPACE_INDENTED_DEPARSE->($num_spaces);
+        $self->{deparse_filter_cleanup} = undef;
     }
 }
 
@@ -203,6 +205,7 @@ sub prepareInput {
         my ($self, @level_identifiers) = @_;
         $self->{parse_filter} = $make_DOT_SEPERATED_LEVEL_PARSE->(@level_identifiers);
         $self->{deparse_filter} = $make_DOT_SEPERATED_LEVEL_DEPARSE->(@level_identifiers);
+        $self->{deparse_filter_cleanup} = undef;
     }    
 
 }
@@ -795,6 +798,8 @@ This module uses two other modules I have written:
 
 =item Thanks to Chad Ullman for reporting RT Bug #12244 and providing code and test case for it.
 
+=item Thanks to Gerd for reporting RT Bug #13041 and providing code to fix it.
+
 =back
 
 =head1 AUTHOR
@@ -803,7 +808,7 @@ stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004 by Infinity Interactive, Inc.
+Copyright 2004, 2005 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 
