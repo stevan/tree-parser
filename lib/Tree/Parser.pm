@@ -64,27 +64,30 @@ sub setInput {
 # types of arguments:
 # 	- a .tree file
 # 	- an array reference of lines
-# 	- a single string of code (can have embedded newlines)	
-# and then returns an iterator 
+# 	- a single string of code (can have embedded newlines)
+# and then returns an iterator.
+# references will be stringified, unless they are array references or
+# Array::Iterator objects.
 sub prepareInput {
 	my ($self, $input) = @_;
-	if (ref($input)) {
-		if (ref($input) eq "ARRAY") {
-			return Array::Iterator->new($input);
-		}
-		elsif (blessed($input) && $input->isa("Array::Iterator")) {
-			return $input;
-		}
-		else {
-			die "Incorrect Object Type: input type not recognized (" . ref($input) . ")";
-		}
-	}
-	elsif ($input =~ /\.tree$/) {
+
+    # already an A:I instance
+    return $input
+        if blessed($input) and $input->isa('Array::Iterator');
+
+    # a simple array
+    return Array::Iterator->new($input)
+        if ref($input) eq 'ARRAY';
+
+    # stringifies to something that ends in .tree
+	if ($input =~ /\.tree$/) {
 		open(TREE_FILE, "<", $input) || die "cannot open file: $!";
 		my @lines = <TREE_FILE>;
 		close(TREE_FILE);
 		return Array::Iterator->new(@lines);
 	}
+
+    # everything else
 	else {
         my @lines;
         if ($input =~ /\n/) {

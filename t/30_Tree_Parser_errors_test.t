@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 15;
 use Test::Exception;
 
 BEGIN { 
@@ -17,9 +17,10 @@ my $tp = Tree::Parser->new();
 
 # constructor errors
 
-throws_ok {
-    my $tp = Tree::Parser->new(bless({}, "Fail"));
-} qr/Incorrect Object Type/, '.. be sure we have the right exception';
+#   too much strictness for Path::Class
+#throws_ok {
+#    my $tp = Tree::Parser->new(bless({}, "Fail"));
+#} qr/Incorrect Object Type/, '.. be sure we have the right exception';
 
 # input errors
 

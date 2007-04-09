@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 19;
 
 BEGIN { 
     use_ok('Tree::Parser') 
@@ -135,7 +135,7 @@ isa_ok($tree, "Tree::Simple");
         , '... parsed correctly');
 }
 
-# using new to set an Array::Iterator
+# using new to set a file
 {
     my $tp = Tree::Parser->new("t/sample.tree");
     isa_ok($tp, "Tree::Parser");
@@ -157,4 +157,28 @@ isa_ok($tree, "Tree::Simple");
         [ qw/1.0 1.1 1.1.1 1.1.2 1.2 1.2.1 1.2.2 2.0 2.1 2.2 3.0 3.1 3.1.1 3.2 3.3 3.3.1/ ]
         , '... parsed correctly');
 
+}
+
+# using new to set a Path::Class object, if available
+SKIP: {
+    eval { require Path::Class };
+    skip q(Install Path::Class to run this test), 3 if $@;
+
+    my $tp = Tree::Parser->new(Path::Class::File->new('t/sample.tree'));
+    isa_ok($tp, 'Tree::Parser');
+
+    $tp->useSpaceIndentedFilters(1);
+    my $tree = $tp->parse;
+    isa_ok($tree, 'Tree::Simple');
+
+    my @accumulation;
+    $tree->traverse(sub {
+        my ($tree) = @_;
+        push @accumulation, $tree->getNodeValue();
+    });
+    
+    is_deeply(
+        [ @accumulation ], 
+        [ qw/1.0 1.1 1.1.1 1.1.2 1.2 1.2.1 1.2.2 2.0 2.1 2.2 3.0 3.1 3.1.1 3.2 3.3 3.3.1/ ]
+        , '... parsed correctly');
 }
