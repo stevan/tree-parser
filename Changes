@@ -1,6 +1,8 @@
 Revision history for Perl extension Tree::Parser.
 
-0.12 ???
+0.12 Monday May 21, 2007
+    - added handling for files which are not named
+      *.tree
     - Now also accepts objects stringifying to file path's
       ending in '.tree', e.g., for use with Path::Class
       - including tests

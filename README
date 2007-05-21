@@ -1,4 +1,4 @@
-Tree::Parser version 0.11
+Tree::Parser version 0.12
 ========================
 
 INSTALLATION
@@ -19,7 +19,7 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2004 & 2005 Infinity Interactive, Inc.
+Copyright (C) 2004-2007 Infinity Interactive, Inc.
 
 http://www.iinteractive.com
 

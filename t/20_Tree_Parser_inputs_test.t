@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 22;
 
 BEGIN { 
     use_ok('Tree::Parser') 
@@ -138,6 +138,29 @@ isa_ok($tree, "Tree::Simple");
 # using new to set a file
 {
     my $tp = Tree::Parser->new("t/sample.tree");
+    isa_ok($tp, "Tree::Parser");
+    
+    $tp->useSpaceIndentedFilters(1);   
+    
+    my $tree = $tp->parse();
+
+    isa_ok($tree, "Tree::Simple");
+    
+    my @accumulation;
+    $tree->traverse(sub {
+        my ($tree) = @_;
+        push @accumulation, $tree->getNodeValue();
+    });
+    
+    is_deeply(
+        [ @accumulation ], 
+        [ qw/1.0 1.1 1.1.1 1.1.2 1.2 1.2.1 1.2.2 2.0 2.1 2.2 3.0 3.1 3.1.1 3.2 3.3 3.3.1/ ]
+        , '... parsed correctly');
+
+}
+
+{
+    my $tp = Tree::Parser->new("t/sample_tree.txt");
     isa_ok($tp, "Tree::Parser");
     
     $tp->useSpaceIndentedFilters(1);   

@@ -70,7 +70,7 @@ sub setInput {
 # Array::Iterator objects.
 sub prepareInput {
 	my ($self, $input) = @_;
-
+	
     # already an A:I instance
     return $input
         if blessed($input) and $input->isa('Array::Iterator');
@@ -81,12 +81,12 @@ sub prepareInput {
 
     # stringifies to something that ends in .tree
 	if ($input =~ /\.tree$/) {
-		open(TREE_FILE, "<", $input) || die "cannot open file: $!";
-		my @lines = <TREE_FILE>;
-		close(TREE_FILE);
-		return Array::Iterator->new(@lines);
+	    IS_A_FILE:
+    		open(TREE_FILE, "<", $input) || die "cannot open file: $!";
+    		my @lines = <TREE_FILE>;
+    		close(TREE_FILE);
+    		return Array::Iterator->new(@lines);	
 	}
-
     # everything else
 	else {
         my @lines;
@@ -99,6 +99,9 @@ sub prepareInput {
             @lines = grep { $_ ne "" } split /(\(|\)|\s|\")/ => $input; #"
         }
         else {
+            # lets check if it is a file though
+            goto IS_A_FILE if -f $input;
+            # otherwise, croak on this sucker ...
             die "Incorrect Object Type : input looked like a single string, but has no newlines or does not start with paren";
         }
 		return Array::Iterator->new(@lines);		
@@ -439,7 +442,10 @@ sub _parse {
 }
 
 1;
+
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -490,13 +496,22 @@ Tree::Parser - Module to parse formatted files into tree structures
 
 =head1 DESCRIPTION
 
-This module can parse various types of input (formatted and containing hierarchal information) into a tree structures. It can also deparse the same tree structures back into a string. It accepts various types of input, such as; strings, filenames, array references. The tree structure is a hierarchy of B<Tree::Simple> objects. 
+This module can parse various types of input (formatted and containing 
+hierarchal information) into a tree structures. It can also deparse the 
+same tree structures back into a string. It accepts various types of 
+input, such as; strings, filenames, array references. The tree structure 
+is a hierarchy of B<Tree::Simple> objects. 
 
-The parsing is controlled through a parse filter, which is used to process each "line" in the input (see C<setParseFilter> below for more information about parse filters). 
+The parsing is controlled through a parse filter, which is used to process 
+each "line" in the input (see C<setParseFilter> below for more information 
+about parse filters). 
 
-The deparseing as well is controlled by a deparse filter, which is used to covert each tree node into a string representation.
+The deparseing as well is controlled by a deparse filter, which is used to 
+covert each tree node into a string representation.
 
-This module can be viewed (somewhat simplistically) as a serialization tool for B<Tree::Simple> objects. Properly written parse and deparse filters can be used to do "round-trip" tree handling.
+This module can be viewed (somewhat simplistically) as a serialization tool 
+for B<Tree::Simple> objects. Properly written parse and deparse filters can 
+be used to do "round-trip" tree handling.
 
 =head1 METHODS
 
@@ -506,7 +521,8 @@ This module can be viewed (somewhat simplistically) as a serialization tool for 
 
 =item B<new ($tree | $input)>
 
-The constructor is used primarily for creating an object instance. Initializing the object is done by the C<_init> method (see below).
+The constructor is used primarily for creating an object instance. Initializing 
+the object is done by the C<_init> method (see below).
 
 =back
 
@@ -516,11 +532,13 @@ The constructor is used primarily for creating an object instance. Initializing 
 
 =item B<setInput ($input)>
 
-This method will take varios types of input, and pre-process them through the C<prepareInput> method below.
+This method will take varios types of input, and pre-process them through the 
+C<prepareInput> method below.
 
 =item B<prepareInput ($input)>
 
-The C<prepareInput> method is used to pre-process certain types of C<$input>. It accepts any of the follow types of arguments:
+The C<prepareInput> method is used to pre-process certain types of C<$input>. 
+It accepts any of the follow types of arguments:
 
 =over 4
 
@@ -532,13 +550,18 @@ This just gets passed on through.
 
 This type of argument is used to construct an B<Array::Iterator> instance.
 
-=item * I<a filename which ends in C<.tree>>
+=item * I<a filename>
 
-The file is opened, its contents slurped into an array, which is then used to construct an B<Array::Iterator> instance.
+The file is opened, its contents slurped into an array, which is then used to 
+construct an B<Array::Iterator> instance. 
+
+B<NOTE>: we used to only handle files with the C<.tree> extension, however that 
+was annoying, so now we accept any file name.
 
 =item * I<a string>
 
-The string is expected to have at least one embedded newline or be in the nested parens format.
+The string is expected to have at least one embedded newline or be in the nested 
+parens format.
 
 =back
 
@@ -552,7 +575,9 @@ It then returns an B<Array::Iterator> object ready for the parser.
 
 =item B<useTabIndentedFilters>
 
-This will set the parse and deparse filters to handle tab indented content. This is for true tabs C<\t> only. The parse and deparse filters this uses are compatible with one another so round-triping is possible.
+This will set the parse and deparse filters to handle tab indented content. This 
+is for true tabs C<\t> only. The parse and deparse filters this uses are compatible 
+with one another so round-triping is possible.
 
 Example:
 
@@ -568,7 +593,11 @@ Example:
 
 =item B<useSpaceIndentedFilters ($num_spaces)>
 
-This will set the parse and deparse filters to handle space indented content. The optional C<$num_spaces> argument allows you to specify how many spaces are to be treated as a single indent, if this argument is not specified it will default to a 4 space indent. The parse and deparse filters this uses are compatible with one another so round-triping is possible.
+This will set the parse and deparse filters to handle space indented content. The 
+optional C<$num_spaces> argument allows you to specify how many spaces are to be 
+treated as a single indent, if this argument is not specified it will default to a 
+4 space indent. The parse and deparse filters this uses are compatible with one 
+another so round-triping is possible.
 
 Example:
 
@@ -584,7 +613,8 @@ Example:
 
 =item B<useDotSeperatedLevelFilters (@level_identifiers)>
 
-This will set the parse and deparse filters to handle trees which are described in the following format:
+This will set the parse and deparse filters to handle trees which are described in 
+the following format:
 
   1 First Child
   1.1 First Grandchild
@@ -593,11 +623,16 @@ This will set the parse and deparse filters to handle trees which are described 
   1.3 Third Grandchild
   2 Second Child 
 
-There must be at least one space seperating the level identifier from the level name, all other spaces will be considered part of the name itself.
+There must be at least one space seperating the level identifier from the level 
+name, all other spaces will be considered part of the name itself.
 
-The parse and deparse filters this uses are compatible with one another so round-triping is possible.
+The parse and deparse filters this uses are compatible with one another so 
+round-triping is possible.
 
-The labels used are those specified in the C<@level_identifiers> argument. The above code uses the default level identifiers (C<1 .. 100>). But by passing the following as a set of level identifiers: C<'a' .. 'z'>, you can successfully parse a format like this:
+The labels used are those specified in the C<@level_identifiers> argument. The 
+above code uses the default level identifiers (C<1 .. 100>). But by passing the 
+following as a set of level identifiers: C<'a' .. 'z'>, you can successfully 
+parse a format like this:
 
   a First Child
   a.a First Grandchild
@@ -606,25 +641,43 @@ The labels used are those specified in the C<@level_identifiers> argument. The a
   a.c Third Grandchild
   b Second Child
 
-Currently, you are restricted to only one set of level identifiers. Future plans include allowing each depth to have its own set of identifiers, therefore allowing formats like this: C<1.a> or other such variations (see L<TO DO> section for more info).
+Currently, you are restricted to only one set of level identifiers. Future plans 
+include allowing each depth to have its own set of identifiers, therefore allowing 
+formats like this: C<1.a> or other such variations (see L<TO DO> section for more 
+info).
 
 =item B<useNestedParensFilters>
 
-This will set the parse and deparse filters to handle trees which are described in the following format:
+This will set the parse and deparse filters to handle trees which are described 
+in the following format:
 
   (1 (1.1 1.2 (1.2.1) 1.3) 2 (2.1))
 
-The parser will count the parentheses to determine the depth of the current node. This filter can also handle double quoted strings as values as well. So this would be valid input:
+The parser will count the parentheses to determine the depth of the current node. 
+This filter can also handle double quoted strings as values as well. So this would 
+be valid input:
 
   (root ("tree 1" ("tree 1 1" "tree 1 2") "tree 2"))
 
-This format is currently somewhat limited in that the input must all be on one line and not contain a trailing newline. It also does not handle embedded escaped double quotes. Further refinement and improvement of this filter format is to come (and patches are always welcome).
+This format is currently somewhat limited in that the input must all be on one 
+line and not contain a trailing newline. It also does not handle embedded escaped 
+double quotes. Further refinement and improvement of this filter format is to come 
+(and patches are always welcome).
 
-It should be noted that this filter also cannot perform a roundtrip operation where the deparsed output is the exact same as the parsed input because it does not treat whitespace as signifigant (unless it is within a double quoted string). 
+It should be noted that this filter also cannot perform a roundtrip operation 
+where the deparsed output is the exact same as the parsed input because it does 
+not treat whitespace as signifigant (unless it is within a double quoted string). 
 
 =item B<setParseFilter ($filter)>
 
-A parse filter is a subroutine reference which is used to process each element in the input. As the main parse loop runs, it calls this filter routine and passes it the B<Array::Iterator> instance which represents the input. To get the next element/line/token in the iterator, the filter must call C<next>, the element should then be processed by the filter. A filter can if it wants advance the iterator further by calling C<next> more than once if nessecary, there are no restrictions as to what it can do. However, the filter B<must> return these two values in order to correctly construct the tree:
+A parse filter is a subroutine reference which is used to process each element 
+in the input. As the main parse loop runs, it calls this filter routine and 
+passes it the B<Array::Iterator> instance which represents the input. To get 
+the next element/line/token in the iterator, the filter must call C<next>, the 
+element should then be processed by the filter. A filter can if it wants advance 
+the iterator further by calling C<next> more than once if nessecary, there are 
+no restrictions as to what it can do. However, the filter B<must> return these 
+two values in order to correctly construct the tree:
 
 =over 4
 
@@ -636,17 +689,23 @@ A parse filter is a subroutine reference which is used to process each element i
 
 =item I<the value of the node>
 
-This value will be used as the node value when constructing the new tree. This can basically be any scalar value.
+This value will be used as the node value when constructing the new tree. This 
+can basically be any scalar value.
 
 =item I<an instance of either a Tree::Simple object, or some derivative of Tree::Simple>
 
-If you need to perform special operations on the tree instance before it get's added to the larger hierarchy, then you can construct it within the parse filter and return it. An example of why you might want to do this would be if you wanted to set the UID of the tree instance from something in the parse filter.
+If you need to perform special operations on the tree instance before it get's 
+added to the larger hierarchy, then you can construct it within the parse filter 
+and return it. An example of why you might want to do this would be if you 
+wanted to set the UID of the tree instance from something in the parse filter.
 
 =back
 
 =back
 
-The following is an example of a very basic filter which simply counts the number of tab characters to determine the node depth and then captures any remaining character on the line.
+The following is an example of a very basic filter which simply counts the 
+number of tab characters to determine the node depth and then captures any 
+remaining character on the line.
 
   $tree_parser->setParseFilter(sub {
       my ($iterator) = @_;
@@ -662,9 +721,15 @@ The following is an example of a very basic filter which simply counts the numbe
 
 =item B<setDeparseFilter ($filter)>
 
-The deparse filter is the opposite of the parse filter, it takes each element of the tree and returns a string representation of it. The filter routine gets passed a B<Tree::Simple> instance and is expected to return a single string. However, this is not enforced we actually will gobble up all the filter returns, but keep in mind that each element returned is considered to be a single line in the output, so multiple elements will be treated as mutiple lines. 
+The deparse filter is the opposite of the parse filter, it takes each element 
+of the tree and returns a string representation of it. The filter routine gets 
+passed a B<Tree::Simple> instance and is expected to return a single string. 
+However, this is not enforced we actually will gobble up all the filter returns, 
+but keep in mind that each element returned is considered to be a single line 
+in the output, so multiple elements will be treated as mutiple lines. 
 
-Here is an example of a deparse filter. This can be viewed as the inverse of the parse filter example above.
+Here is an example of a deparse filter. This can be viewed as the inverse of 
+the parse filter example above.
 
   $tp->setDeparseFilter(sub { 
       my ($tree) = @_;
@@ -689,11 +754,17 @@ This method returns the tree held by the parser or set through the constructor.
 
 =item B<parse>
 
-Parsing is pretty automatic once everthing is set up. This routine will check to be sure you have all you need to proceed, and throw an execption if not. Once the parsing is complete, the tree will be stored interally as well as returned from this method.
+Parsing is pretty automatic once everthing is set up. This routine will check 
+to be sure you have all you need to proceed, and throw an execption if not. 
+Once the parsing is complete, the tree will be stored interally as well as 
+returned from this method.
 
 =item B<deparse>
 
-This method too is pretty automatic, it verifies that it has all its needs, throwing an exception if it does not. It will return an array of lines in list context, or in scalar context it will join the array into a single string seperated by newlines.
+This method too is pretty automatic, it verifies that it has all its needs, 
+throwing an exception if it does not. It will return an array of lines in list 
+context, or in scalar context it will join the array into a single string 
+seperated by newlines.
 
 =back
 
@@ -703,15 +774,22 @@ This method too is pretty automatic, it verifies that it has all its needs, thro
 
 =item B<_init ($tree | $input)>
 
-This will initialize the slots of the object. If given a C<$tree> object, it will store it. This is currently the prefered way in which to use subclasses of B<Tree::Simple> to build your tree with, as this object will be used to build any other trees (see L<TO DO> for more information). If given some other kind of input, it will process this through the C<prepareInput> method.
+This will initialize the slots of the object. If given a C<$tree> object, it 
+will store it. This is currently the prefered way in which to use subclasses 
+of B<Tree::Simple> to build your tree with, as this object will be used to 
+build any other trees (see L<TO DO> for more information). If given some other
+kind of input, it will process this through the C<prepareInput> method.
 
 =item B<_parse>
 
-This is where all the parsing work is done. If you are truely interested in the inner workings of this method, I suggest you refer to the source. It is a very simple algorithm and should be easy to understand.
+This is where all the parsing work is done. If you are truely interested in the 
+inner workings of this method, I suggest you refer to the source. It is a very 
+simple algorithm and should be easy to understand.
 
 =item B<_deparse>
 
-This is where all the deparsing work is done. As with the C<_parse> method, if you are interested in the inner workings, I suggest you refer to the source. 
+This is where all the deparsing work is done. As with the C<_parse> method, if 
+you are interested in the inner workings, I suggest you refer to the source. 
 
 =back
 
@@ -721,11 +799,14 @@ This is where all the deparsing work is done. As with the C<_parse> method, if y
 
 =item Enhance the Nested Parens filter
 
-This filter is somewhat limited in its handling of embedded newlines as well as embedded double quotes (even if they are escaped). I would like to improve this filter more when time allows. 
+This filter is somewhat limited in its handling of embedded newlines as well as 
+embedded double quotes (even if they are escaped). I would like to improve this 
+filter more when time allows. 
 
 =item Enhance the Dot Seperated Level filter
 
-I would like to enhance this built in filter to handle multi-level level-identifiers, basically allowing formats like this:
+I would like to enhance this built in filter to handle multi-level level-identifiers, 
+basically allowing formats like this:
 
   1 First Child
   1.a First Grandchild
@@ -737,17 +818,24 @@ I would like to enhance this built in filter to handle multi-level level-identif
 
 =item Make Tree::Simple subclasses more easy to handle
 
-Currently in order to have Tree::Parser use a subclass of Tree::Simple to build the heirarchy with, you must pass a tree into the constructor, and then set the input manually. This could be handled better I think, but right now I am not 100% how best to go about it.
+Currently in order to have Tree::Parser use a subclass of Tree::Simple to build 
+the heirarchy with, you must pass a tree into the constructor, and then set the 
+input manually. This could be handled better I think, but right now I am not 100% 
+how best to go about it.
 
 =back
 
 =head1 BUGS
 
-None that I am aware of. Of course, if you find a bug, let me know, and I will be sure to fix it. This module, in an earlier form, has been and is being used in production for approx. 1 year now without incident. This version has been improved and the test suite added.
+None that I am aware of. Of course, if you find a bug, let me know, and I will be 
+sure to fix it. This module, in an earlier form, has been and is being used in 
+production for approx. 1 year now without incident. This version has been improved 
+and the test suite added.
 
 =head1 CODE COVERAGE
 
-I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Devel::Cover> report on this module's test suite.
+I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Devel::Cover> 
+report on this module's test suite.
 
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
  File                           stmt branch   cond    sub    pod   time  total
@@ -759,29 +847,46 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
 
 =head1 SEE ALSO
 
-This module is not an attempt at a general purpose parser by any stretch of the imagination. It is basically a very flexible special purpose parser, it only builds Tree::Simple heirarchies, but your parse filters can be as complex as nessecary. If this is not what you are looking for, then you might want to consider one of the following modules:
+This module is not an attempt at a general purpose parser by any stretch of the 
+imagination. It is basically a very flexible special purpose parser, it only 
+builds Tree::Simple heirarchies, but your parse filters can be as complex as nessecary. 
+If this is not what you are looking for, then you might want to consider one of 
+the following modules:
 
 =over 4
 
 =item B<Parse::RecDescent>
 
-This is a general purpose Recursive Descent parser generator written by Damian Conway. If your parsing needs lean towards the more complex, this is good module for you. Recursive Descent parsing is known to be slower than other parsing styles, but it tends to be easier to write grammers for, so there is a trade off. If speed is a concern, then you may just want to skip perl and go straight to C and use C<yacc>.
+This is a general purpose Recursive Descent parser generator written by Damian 
+Conway. If your parsing needs lean towards the more complex, this is good module 
+for you. Recursive Descent parsing is known to be slower than other parsing styles, 
+but it tends to be easier to write grammers for, so there is a trade off. If speed 
+is a concern, then you may just want to skip perl and go straight to C and use 
+C<yacc>.
 
 =item B<Parse::Yapp>
 
-As an alternative to Recursive Descent parsing, you can do LALR parsing. It is faster and does not have some of the well known (and avoidable) problems of Recursive Descent parsing. I have never actually used this module, but I have heard good things about it. 
+As an alternative to Recursive Descent parsing, you can do LALR parsing. It is 
+faster and does not have some of the well known (and avoidable) problems of 
+Recursive Descent parsing. I have never actually used this module, but I have 
+heard good things about it. 
 
 =item B<Parse::FixedLength>
 
-If all you really need to do is process a file with fixed length fields in it, you can use this module.
+If all you really need to do is process a file with fixed length fields in it, 
+you can use this module.
 
 =item B<Parse::Tokens>
 
-This class will help you parse text with embedded tokens in it. I am not very familiar with this module, but it looks interesting.
+This class will help you parse text with embedded tokens in it. I am not very 
+familiar with this module, but it looks interesting.
 
 =back
 
-There are also a number of specific parsers out here, such as B<HTML::Parser> and B<XML::Parser>, which do one thing and do it well. If you are looking to parse HTML or XML, don't use my module, use these ones, it just makes sense. Use the right tool for the job basically.
+There are also a number of specific parsers out here, such as B<HTML::Parser> 
+and B<XML::Parser>, which do one thing and do it well. If you are looking to 
+parse HTML or XML, don't use my module, use these ones, it just makes sense. 
+Use the right tool for the job basically.
 
 =head1 DEPENDENCIES
 
@@ -811,7 +916,7 @@ stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004, 2005 by Infinity Interactive, Inc.
+Copyright 2004-2007 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 
