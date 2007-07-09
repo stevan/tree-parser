@@ -1,5 +1,12 @@
 Revision history for Perl extension Tree::Parser.
 
+0.13 Monday, July 9, 2007
+    - fixed infinite loop bug in NestedParensFilters thanks to Eneko Agirre
+        - added test for this
+    - fixed spelling issue in method name useDotSeparatedLevelFilters
+      kept the original mispelled method aliased to preserve backwards 
+      compat. Thanks to Steven Jenkins for this. 
+
 0.12 Monday May 21, 2007
     - added handling for files which are not named *.tree
     - Now also accepts objects stringifying to file path's

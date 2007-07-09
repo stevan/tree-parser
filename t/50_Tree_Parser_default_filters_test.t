@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 22;
 
 BEGIN { 
     use_ok('Tree::Parser') 
@@ -150,4 +150,27 @@ TREE_STRING
         [ "root", "tree 1", "tree 2", "tree 2 1" ]
         , '... parsed correctly');
 }
+
+{
+    my $tp = Tree::Parser->new('(root (1 2 (0)))');
+    isa_ok($tp, "Tree::Parser");
+    
+    $tp->useNestedParensFilters();     
+    
+    my $tree = $tp->parse();
+    isa_ok($tree, "Tree::Simple");
+    
+    my @accumulation;
+    $tree->traverse(sub {
+        my ($tree) = @_;
+        push @accumulation, $tree->getNodeValue();
+    });
+    
+    is_deeply(
+        [ @accumulation ], 
+        [ "root", "1", "2", "0" ]
+        , '... parsed correctly');
+}
+
+
 

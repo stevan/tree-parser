@@ -4,7 +4,7 @@ package Tree::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 use Scalar::Util qw(blessed);
 
@@ -206,13 +206,15 @@ sub prepareInput {
             return ((join "." => @numbers) . " " . $tree->getNodeValue()); 
         };
     };    
-    
-    sub useDotSeperatedLevelFilters {
+        
+    sub useDotSeparatedLevelFilters {
         my ($self, @level_identifiers) = @_;
         $self->{parse_filter} = $make_DOT_SEPERATED_LEVEL_PARSE->(@level_identifiers);
         $self->{deparse_filter} = $make_DOT_SEPERATED_LEVEL_DEPARSE->(@level_identifiers);
         $self->{deparse_filter_cleanup} = undef;
-    }    
+    }   
+    
+    *useDotSeperatedLevelFilters = \&useDotSeparatedLevelFilters; 
 
 }
 
@@ -226,7 +228,7 @@ sub prepareInput {
             my ($line_iterator) = @_;
             my $line = $line_iterator->next();
             my $node = "";
-            until ($node) {
+            while (!$node && $node ne 0) {
                 if ($line eq "(") {
                     push @paren_stack => $line;
                     last unless $line_iterator->hasNext();
