@@ -1,5 +1,8 @@
 Revision history for Perl extension Tree::Parser.
 
+0.14 Monday, July 9, 2007
+    - forgot to add fixed method name to POD
+
 0.13 Monday, July 9, 2007
     - fixed infinite loop bug in NestedParensFilters thanks to Eneko Agirre
         - added test for this

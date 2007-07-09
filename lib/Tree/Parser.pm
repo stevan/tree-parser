@@ -4,7 +4,7 @@ package Tree::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 use Scalar::Util qw(blessed);
 
@@ -613,7 +613,7 @@ Example:
     3.1
       3.1.1
 
-=item B<useDotSeperatedLevelFilters (@level_identifiers)>
+=item B<useDotSeparatedLevelFilters (@level_identifiers)>
 
 This will set the parse and deparse filters to handle trees which are described in 
 the following format:
@@ -647,6 +647,10 @@ Currently, you are restricted to only one set of level identifiers. Future plans
 include allowing each depth to have its own set of identifiers, therefore allowing 
 formats like this: C<1.a> or other such variations (see L<TO DO> section for more 
 info).
+
+=item B<useDotSeperatedLevelFilters>
+
+This old mispelled method name is kept for backwards compat.
 
 =item B<useNestedParensFilters>
 
