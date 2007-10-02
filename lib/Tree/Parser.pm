@@ -4,7 +4,7 @@ package Tree::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 use Scalar::Util qw(blessed);
 
@@ -54,6 +54,12 @@ sub _init {
 
 ### methods
 
+sub setFileEncoding {
+    my ($self, $file_encoding) = @_;
+    (defined($file_encoding)) || die "Insufficient Arguments : file_encoding must be defined";
+    $self->{file_encoding} = $file_encoding;    
+}
+
 sub setInput {
     my ($self, $input) = @_;
     (defined($input)) || die "Insufficient Arguments : input undefined";
@@ -82,7 +88,10 @@ sub prepareInput {
     # stringifies to something that ends in .tree
 	if ($input =~ /\.tree$/) {
 	    IS_A_FILE:
-    		open(TREE_FILE, "<", $input) || die "cannot open file: $!";
+	        my $encoding = (defined $self->{file_encoding} 
+	            ? (":" . $self->{file_encoding}) 
+	            : '');
+    		open(TREE_FILE, ("<" . $encoding), $input) || die "cannot open file: $!";
     		my @lines = <TREE_FILE>;
     		close(TREE_FILE);
     		return Array::Iterator->new(@lines);	
@@ -568,6 +577,11 @@ parens format.
 =back
 
 It then returns an B<Array::Iterator> object ready for the parser.
+
+=item B<setFileEncoding($encoding)>
+
+This allows you to specify the C<$encoding> that the file should be read using. 
+This is only only applicable when your input is a file.
 
 =back
 

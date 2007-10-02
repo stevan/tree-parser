@@ -1,5 +1,9 @@
 Revision history for Perl extension Tree::Parser.
 
+0.15 Tues. Oct. 2, 2007
+    - added support for different file encodings
+      when reading .tree files
+
 0.14 Monday, July 9, 2007
     - forgot to add fixed method name to POD
 
